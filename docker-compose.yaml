@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  apbot:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME}
+      - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - STUDENT_USERNAME=${STUDENT_USERNAME:-student}
+      - STUDENT_PASSWORD=${STUDENT_PASSWORD:-student123}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  data:
+  logs:

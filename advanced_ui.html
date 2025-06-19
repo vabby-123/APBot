@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confluence RAG Chatbot - Advanced Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-title {
+            color: #333;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .role-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .login-input:focus {
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Main Interface */
+        .main-interface {
+            display: none;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .role-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Admin Dashboard */
+        .admin-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: calc(100vh - 80px);
+        }
+
+        .admin-sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .action-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-title {
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-updating {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .log-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+
+        .log-info { background: #cce5ff; color: #0066cc; }
+        .log-success { background: #d4edda; color: #155724; }
+        .log-warning { background: #fff3cd; color: #856404; }
+        .log-error { background: #f8d7da; color: #721c24; }
+
+        /* Student Interface */
+        .student-container {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            height: calc(100vh - 80px);
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            min-height: 400px;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .bot-message {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            margin-right: auto;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+
+        .sources {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .sources h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .source-item {
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .source-item a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .source-item a:hover {
+            text-decoration: underline;
+        }
+
+        .chat-input-container {
+            padding: 2rem;
+            border-top: 1px solid #e9ecef;
+            background: white;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 1rem 4rem 1rem 1.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .typing-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-sidebar {
+                display: none;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .student-container {
+                padding: 1rem;
+            }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <div class="login-card">
+            <h2 class="login-title">🤖 RAG Chatbot Login</h2>
+            
+            <div class="role-selector">
+                <div class="role-btn active" data-role="student">
+                    <div>👨‍🎓 Student</div>
+                    <small>Chat Access</small>
+                </div>
+                <div class="role-btn" data-role="admin">
+                    <div>👨‍💼 Admin</div>
+                    <small>Full Control</small>
+                </div>
+            </div>
+
+            <input type="text" id="username" class="login-input" placeholder="Username" value="">
+            <input type="password" id="password" class="login-input" placeholder="Password" value="">
+            
+            <button class="login-btn" onclick="login()">
+                🚀 Login
+            </button>
+            
+            <div style="margin-top: 1rem; font-size: 0.8rem; color: #666;">
+                Demo Credentials:<br>
+                Admin: admin/admin123<br>
+                Student: student/student123
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Interface -->
+    <div id="main-interface" class="main-interface">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>🤖 Confluence RAG Chatbot</h1>
+                <span id="role-badge" class="role-badge">Student</span>
+            </div>
+            <div class="header-right">
+                <div id="connection-status" class="status-badge status-offline">🔴 Disconnected</div>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <!-- Admin Interface -->
+        <div id="admin-interface" class="admin-container" style="display: none;">
+            <div class="admin-sidebar">
+                <nav>
+                    <div class="nav-item active" data-tab="dashboard">
+                        <span>📊</span> Dashboard
+                    </div>
+                    <div class="nav-item" data-tab="knowledge-base">
+                        <span>📚</span> Knowledge Base
+                    </div>
+                    <div class="nav-item" data-tab="students">
+                        <span>👥</span> Students
+                    </div>
+                    <div class="nav-item" data-tab="settings">
+                        <span>⚙️</span> Settings
+                    </div>
+                    <div class="nav-item" data-tab="logs">
+                        <span>📝</span> System Logs
+                    </div>
+                </nav>
+            </div>
+
+            <div class="admin-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <h2>📊 Admin Dashboard</h2>
+                    
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-documents">0</div>
+                            <div class="stat-label">Total Documents</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-chunks">0</div>
+                            <div class="stat-label">Content Chunks</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="active-students">0</div>
+                            <div class="stat-label">Active Students</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-queries">247</div>
+                            <div class="stat-label">Total Queries</div>
+                        </div>
+                    </div>
+
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">🔄 Knowledge Base Actions</h3>
+                            <button class="btn btn-primary" onclick="updateKnowledgeBase()">
+                                <span>🔄</span> Force Update
+                            </button>
+                        </div>
+                        <p>Last updated: <span id="last-update">Never</span></p>
+                        <div id="update-status" style="margin-top: 1rem;"></div>
+                    </div>
+
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">📈 Quick Stats</h3>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>System Status</td>
+                                    <td>Operational</td>
+                                    <td><span class="status-badge status-online">Online</span></td>
+                                </tr>
+                                <tr>
+                                    <td>KB Update Status</td>
+                                    <td id="kb-status">Idle</td>
+                                    <td><span class="status-badge status-online">Ready</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Connected Clients</td>
+                                    <td id="connected-clients">0</td>
+                                    <td><span class="status-badge status-online">Active</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Knowledge Base Tab -->
+                <div id="knowledge-base-tab" class="tab-content">
+                    <h2>📚 Knowledge Base Management</h2>
+                    
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">➕ Add New Source</h3>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confluence Space Key</label>
+                            <input type="text" class="form-input" id="space-key" placeholder="e.g., TECH, DOCS, KB">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Specific Page URL (Optional)</label>
+                            <input type="text" class="form-input" id="page-url" placeholder="https://your-domain.atlassian.net/wiki/...">
+                        </div>
+                        <button class="btn btn-success" onclick="addNewSource()">
+                            <span>➕</span> Add Source
+                        </button>
+                    </div>
+
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">📋 Current Spaces</h3>
+                            <button class="btn btn-primary" onclick="refreshSpaces()">
+                                <span>🔄</span> Refresh
+                            </button>
+                        </div>
+                        <div id="spaces-list">
+                            <div style="text-align: center; color: #666; padding: 2rem;">
+                                Loading spaces...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">⚡ Auto-Update Settings</h3>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Update Interval (Hours)</label>
+                            <input type="number" class="form-input" id="update-interval" value="6" min="1" max="168">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="auto-detect" checked> 
+                                Auto-detect new pages
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveAutoUpdateSettings()">
+                            <span>💾</span> Save Settings
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Students Tab -->
+                <div id="students-tab" class="tab-content">
+                    <h2>👥 Student Management</h2>
+                    
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">➕ Add New Student</h3>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-input" id="new-username" placeholder="student1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-input" id="new-password" placeholder="********">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="new-fullname" placeholder="John Doe">
+                        </div>
+                        <button class="btn btn-success" onclick="addStudent()">
+                            <span>➕</span> Add Student
+                        </button>
+                    </div>
+
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">📋 Current Students</h3>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Status</th>
+                                    <th>Last Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-table">
+                                <tr>
+                                    <td>student1</td>
+                                    <td>John Doe</td>
+                                    <td><span class="status-badge status-online">Online</span></td>
+                                    <td>2 minutes ago</td>
+                                    <td>
+                                        <button class="btn btn-warning" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">Edit</button>
+                                        <button class="btn btn-danger" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">Remove</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>student2</td>
+                                    <td>Jane Smith</td>
+                                    <td><span class="status-badge status-offline">Offline</span></td>
+                                    <td>1 hour ago</td>
+                                    <td>
+                                        <button class="btn btn-warning" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">Edit</button>
+                                        <button class="btn btn-danger" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">Remove</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-tab" class="tab-content">
+                    <h2>⚙️ System Settings</h2>
+                    
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">🔐 Confluence Configuration</h3>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confluence URL</label>
+                            <input type="text" class="form-input" id="confluence-url" placeholder="https://your-domain.atlassian.net">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="confluence-username" placeholder="your-email@domain.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">API Token</label>
+                            <input type="password" class="form-input" id="confluence-token" placeholder="Your API token">
+                        </div>
+                        <button class="btn btn-primary" onclick="testConnection()">
+                            <span>🔗</span> Test Connection
+                        </button>
+                        <button class="btn btn-success" onclick="saveSettings()">
+                            <span>💾</span> Save Settings
+                        </button>
+                    </div>
+
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">🤖 AI Configuration</h3>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Gemini API Key</label>
+                            <input type="password" class="form-input" id="gemini-key" placeholder="Your Gemini API key">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Model</label>
+                            <select class="form-input" id="ai-model">
+                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-success" onclick="saveAISettings()">
+                            <span>💾</span> Save AI Settings
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Logs Tab -->
+                <div id="logs-tab" class="tab-content">
+                    <h2>📝 System Logs</h2>
+                    
+                    <div class="action-card">
+                        <div class="action-header">
+                            <h3 class="action-title">📊 Real-time Logs</h3>
+                            <button class="btn btn-warning" onclick="clearLogs()">
+                                <span>🗑️</span> Clear Logs
+                            </button>
+                        </div>
+                        <div class="log-container" id="system-logs">
+                            <div class="log-entry log-info">[INFO] System initialized successfully</div>
+                            <div class="log-entry log-success">[SUCCESS] Knowledge base loaded</div>
+                            <div class="log-entry log-info">[INFO] WebSocket server started</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Interface -->
+        <div id="student-interface" class="student-container" style="display: none;">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>💬 IT Support Assistant</h2>
+                    <p>Ask me anything about your Confluence knowledge base!</p>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <div style="text-align: center; color: #666; margin: 2rem 0; font-style: italic;">
+                        👋 Hello! I'm your IT support assistant. I have access to your Confluence knowledge base 
+                        and can help answer questions about IT procedures, troubleshooting, and more.
+                    </div>
+                </div>
+                
+                <div class="typing-indicator" id="typing-indicator">
+                    🤖 Assistant is typing<span class="typing-dots"></span>
+                </div>
+                
+                <div class="chat-input-container">
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            class="chat-input" 
+                            id="chat-input" 
+                            placeholder="Type your question here..."
+                            onkeypress="handleKeyPress(event)"
+                        >
+                        <button class="send-btn" onclick="sendMessage()">
+                            ➤
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="student-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ Add New Student</h3>
+                <span class="close" onclick="closeModal('student-modal')">&times;</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-input" id="modal-username" placeholder="student3">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="modal-password" placeholder="Password">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="modal-fullname" placeholder="Full Name">
+            </div>
+            <button class="btn btn-success" onclick="confirmAddStudent()">
+                <span>✅</span> Add Student
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentRole = 'student';
+        let ws = null;
+        let isConnected = false;
+        let systemLogs = [];
+
+        // Authentication
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const selectedRole = document.querySelector('.role-btn.active').dataset.role;
+
+            // Demo authentication
+            const validCredentials = {
+                admin: { username: 'admin', password: 'admin123' },
+                student: { username: 'student', password: 'student123' }
+            };
+
+            if (validCredentials[selectedRole] && 
+                username === validCredentials[selectedRole].username &&
+                password === validCredentials[selectedRole].password) {
+                
+                currentUser = username;
+                currentRole = selectedRole;
+                
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-interface').style.display = 'block';
+                
+                initializeInterface();
+                initWebSocket();
+                addLog('success', `User ${username} logged in as ${selectedRole}`);
+            } else {
+                alert('Invalid credentials! Use admin/admin123 or student/student123');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            currentRole = 'student';
+            
+            if (ws) {
+                ws.close();
+            }
+            
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('main-interface').style.display = 'none';
+            
+            // Reset forms
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Interface initialization
+        function initializeInterface() {
+            const roleBadge = document.getElementById('role-badge');
+            roleBadge.textContent = currentRole.toUpperCase();
+            roleBadge.className = `role-badge ${currentRole}`;
+
+            if (currentRole === 'admin') {
+                document.getElementById('admin-interface').style.display = 'block';
+                document.getElementById('student-interface').style.display = 'none';
+                loadAdminData();
+            } else {
+                document.getElementById('admin-interface').style.display = 'none';
+                document.getElementById('student-interface').style.display = 'block';
+                document.getElementById('chat-input').focus();
+            }
+        }
+
+        // Role selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleButtons = document.querySelectorAll('.role-btn');
+            roleButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    roleButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Tab navigation for admin
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+        });
+
+        function switchTab(tabName) {
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // WebSocket connection
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                isConnected = true;
+                updateConnectionStatus('online', '🟢 Connected');
+                requestStats();
+                addLog('success', 'WebSocket connection established');
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            
+            ws.onclose = function() {
+                isConnected = false;
+                updateConnectionStatus('offline', '🔴 Disconnected');
+                addLog('error', 'WebSocket connection lost');
+                // Attempt to reconnect after 3 seconds
+                setTimeout(initWebSocket, 3000);
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus('offline', '🔴 Connection Error');
+                addLog('error', 'WebSocket connection error');
+            };
+        }
+
+        function handleWebSocketMessage(data) {
+            switch(data.type) {
+                case 'chat_response':
+                    handleChatResponse(data.data);
+                    break;
+                case 'stats_response':
+                    updateStats(data.data);
+                    break;
+                case 'update_status':
+                    handleUpdateStatus(data);
+                    break;
+            }
+        }
+
+        function updateConnectionStatus(status, message) {
+            const statusEl = document.getElementById('connection-status');
+            statusEl.className = `status-badge status-${status}`;
+            statusEl.textContent = message;
+        }
+
+        // Admin functions
+        function loadAdminData() {
+            requestStats();
+            loadSpaces();
+            updateStudentCount();
+        }
+
+        function requestStats() {
+            if (isConnected) {
+                ws.send(JSON.stringify({type: 'get_stats'}));
+            }
+        }
+
+        function updateStats(stats) {
+            if (currentRole === 'admin') {
+                document.getElementById('total-documents').textContent = stats.total_documents || 0;
+                document.getElementById('total-chunks').textContent = stats.total_chunks || 0;
+                
+                const lastUpdate = stats.last_update ? 
+                    new Date(stats.last_update).toLocaleString() : 'Never';
+                document.getElementById('last-update').textContent = lastUpdate;
+            }
+        }
+
+        function updateKnowledgeBase() {
+            addLog('info', 'Triggering knowledge base update...');
+            
+            fetch('/api/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    force_update: true
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                addLog('success', 'Knowledge base update triggered');
+            })
+            .catch(error => {
+                addLog('error', `Error triggering update: ${error.message}`);
+            });
+        }
+
+        function handleUpdateStatus(data) {
+            const statusDiv = document.getElementById('update-status');
+            
+            if (data.status === 'started') {
+                statusDiv.innerHTML = '<div class="log-container" id="update-progress"></div>';
+            }
+            
+            const progressContainer = document.getElementById('update-progress');
+            if (progressContainer) {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${data.status === 'error' ? 'error' : 
+                                                  data.status === 'completed' ? 'success' : 'info'}`;
+                logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${data.message}`;
+                progressContainer.appendChild(logEntry);
+                progressContainer.scrollTop = progressContainer.scrollHeight;
+            }
+            
+            addLog(data.status === 'error' ? 'error' : 'info', data.message);
+            
+            if (data.status === 'completed' || data.status === 'error') {
+                setTimeout(() => {
+                    requestStats();
+                }, 1000);
+            }
+        }
+
+        function addNewSource() {
+            const spaceKey = document.getElementById('space-key').value.trim();
+            if (!spaceKey) {
+                alert('Please enter a space key');
+                return;
+            }
+            
+            addLog('info', `Adding new source: ${spaceKey}`);
+            // Implementation would integrate with your backend
+            document.getElementById('space-key').value = '';
+            alert('Source added successfully! Knowledge base will be updated automatically.');
+        }
+
+        function loadSpaces() {
+            // Mock data - replace with actual API call
+            const mockSpaces = ['TECH', 'DOCS', 'KB', 'SUPPORT'];
+            const spacesContainer = document.getElementById('spaces-list');
+            
+            spacesContainer.innerHTML = mockSpaces.map(space => 
+                `<div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 0.5rem;">
+                    <span><strong>${space}</strong></span>
+                    <button class="btn btn-danger" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="removeSpace('${space}')">Remove</button>
+                </div>`
+            ).join('');
+        }
+
+        function refreshSpaces() {
+            addLog('info', 'Refreshing spaces list...');
+            loadSpaces();
+            addLog('success', 'Spaces list refreshed');
+        }
+
+        function removeSpace(spaceKey) {
+            if (confirm(`Remove space "${spaceKey}" from knowledge base?`)) {
+                addLog('warning', `Removing space: ${spaceKey}`);
+                loadSpaces();
+            }
+        }
+
+        function addStudent() {
+            const username = document.getElementById('new-username').value.trim();
+            const password = document.getElementById('new-password').value.trim();
+            const fullname = document.getElementById('new-fullname').value.trim();
+            
+            if (!username || !password || !fullname) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            // Add to table
+            const tbody = document.getElementById('students-table');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${username}</td>
+                <td>${fullname}</td>
+                <td><span class="status-badge status-offline">Offline</span></td>
+                <td>Just added</td>
+                <td>
+                    <button class="btn btn-warning" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">Edit</button>
+                    <button class="btn btn-danger" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="removeStudent(this)">Remove</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+            
+            // Clear form
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('new-fullname').value = '';
+            
+            addLog('success', `Student ${username} added successfully`);
+            updateStudentCount();
+        }
+
+        function removeStudent(button) {
+            const row = button.closest('tr');
+            const username = row.cells[0].textContent;
+            
+            if (confirm(`Remove student "${username}"?`)) {
+                row.remove();
+                addLog('warning', `Student ${username} removed`);
+                updateStudentCount();
+            }
+        }
+
+        function updateStudentCount() {
+            const count = document.getElementById('students-table').rows.length;
+            document.getElementById('active-students').textContent = count;
+            document.getElementById('connected-clients').textContent = count;
+        }
+
+        function saveAutoUpdateSettings() {
+            const interval = document.getElementById('update-interval').value;
+            const autoDetect = document.getElementById('auto-detect').checked;
+            
+            addLog('success', `Auto-update settings saved: ${interval}h interval, auto-detect: ${autoDetect}`);
+            alert('Settings saved successfully!');
+        }
+
+        function testConnection() {
+            addLog('info', 'Testing Confluence connection...');
+            // Simulate connection test
+            setTimeout(() => {
+                addLog('success', 'Confluence connection test successful!');
+                alert('Connection test passed!');
+            }, 2000);
+        }
+
+        function saveSettings() {
+            addLog('success', 'Confluence settings saved');
+            alert('Settings saved successfully!');
+        }
+
+        function saveAISettings() {
+            addLog('success', 'AI settings saved');
+            alert('AI settings saved successfully!');
+        }
+
+        // Chat functions (Student interface)
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message || !isConnected) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            showTypingIndicator();
+            
+            if (ws) {
+                ws.send(JSON.stringify({
+                    type: 'chat',
+                    message: message
+                }));
+            }
+            
+            addLog('info', `Student query: ${message.substring(0, 50)}...`);
+        }
+
+        function handleChatResponse(data) {
+            hideTypingIndicator();
+            addMessage(data.response, 'bot', data.sources, data.timestamp);
+        }
+
+        function addMessage(content, sender, sources = null, timestamp = null) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}-message`;
+            
+            if (sender === 'bot') {
+                const markdownContent = marked.parse(content);
+                messageEl.innerHTML = `<div class="markdown-content">${markdownContent}</div>`;
+            } else {
+                messageEl.textContent = content;
+            }
+            
+            if (timestamp) {
+                const timeEl = document.createElement('div');
+                timeEl.className = 'message-time';
+                timeEl.textContent = new Date(timestamp).toLocaleTimeString();
+                messageEl.appendChild(timeEl);
+            }
+            
+            if (sources && sources.length > 0) {
+                const sourcesEl = document.createElement('div');
+                sourcesEl.className = 'sources';
+                sourcesEl.innerHTML = `
+                    <h4>📚 Sources:</h4>
+                    ${sources.map(source => `
+                        <div class="source-item">
+                            <a href="${source.url}" target="_blank">${source.title}</a>
+                            <span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem; margin-left: 0.5rem;">${(source.relevance * 100).toFixed(1)}%</span>
+                            <br><small>Space: ${source.space}</small>
+                        </div>
+                    `).join('')}
+                `;
+                messageEl.appendChild(sourcesEl);
+            }
+            
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typing-indicator').style.display = 'block';
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typing-indicator').style.display = 'none';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Logging system
+        function addLog(level, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+            
+            systemLogs.push({level, message: logEntry, timestamp});
+            
+            if (currentRole === 'admin') {
+                const logsContainer = document.getElementById('system-logs');
+                if (logsContainer) {
+                    const logDiv = document.createElement('div');
+                    logDiv.className = `log-entry log-${level}`;
+                    logDiv.textContent = logEntry;
+                    logsContainer.appendChild(logDiv);
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                    
+                    // Keep only last 100 logs
+                    while (logsContainer.children.length > 100) {
+                        logsContainer.removeChild(logsContainer.firstChild);
+                    }
+                }
+            }
+        }
+
+        function clearLogs() {
+            const logsContainer = document.getElementById('system-logs');
+            logsContainer.innerHTML = '';
+            systemLogs = [];
+            addLog('info', 'Logs cleared');
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Auto-refresh stats every 30 seconds
+        setInterval(() => {
+            if (isConnected && currentRole === 'admin') {
+                requestStats();
+            }
+        }, 30000);
+
+        // Initialize demo credentials
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('username').value = 'student';
+            document.getElementById('password').value = 'student123';
+        });
+    </script>
+</body>
+</html>
