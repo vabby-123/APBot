@@ -2014,10 +2014,42 @@ if __name__ == "__main__":
     print("👤 Admin: admin / admin123")
     print("🎓 Student: student / student123")
     
+    # uvicorn.run(
+    #     app,
+    #     host="0.0.0.0",
+    #     port=8000,
+    #     log_level="info",
+    #     reload=False
+    # )
+    
+    # Replace the uvicorn.run() call at the end of main.py with:
+if __name__ == "__main__":
+    # Check if running on HF Spaces
+    port = int(os.getenv("PORT", 8000))
+    
+    # Ensure required environment variables are set
+    required_vars = ["CONFLUENCE_USERNAME", "CONFLUENCE_API_TOKEN", "GEMINI_API_KEY"]
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        logger.error(f"Missing required environment variables: {', '.join(missing_vars)}")
+        print(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
+        print("Please set these in your Hugging Face Space settings")
+        # Don't exit on HF Spaces, just warn
+        if not os.getenv("SPACE_ID"):  # Only exit if not on HF Spaces
+            exit(1)
+    
+    # Create static directories if they don't exist
+    Path("static").mkdir(exist_ok=True)
+    
+    logger.info("Starting APBot...")
+    print("🚀 Starting APBot...")
+    print(f"📱 Server running on port {port}")
+    
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=8000,
+        port=port,
         log_level="info",
         reload=False
     )
